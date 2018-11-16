@@ -17,12 +17,71 @@ import os
 import pandas as pd
 import re
 import seaborn as sns
-df = pd.read_csv('base_class_flag1.csv',error_bad_lines=False)
-module_url = "https://tfhub.dev/google/universal-sentence-encoder/2" #@param ["https://tfhub.dev/google/universal-sentence-encoder/2", "https://tfhub.dev/google/universal-sentence-encoder-large/3"]
-embed = hub.Module(module_url)
-
-
+from models import InferSent
+import torch
+from scipy.stats.stats import pearsonr   
+import numpy as np
+#df = pd.read_csv('base_class_flag1.csv',error_bad_lines=False)
+df = pd.read_csv('sampledata.csv',error_bad_lines=False)
+#module_url = "https://tfhub.dev/google/universal-sentence-encoder/2" #@param ["https://tfhub.dev/google/universal-sentence-encoder/2", "https://tfhub.dev/google/universal-sentence-encoder-large/3"]
+#embed = hub.Module(module_url)
+#INfersent
+V = 1
+MODEL_PATH = 'infersent%s.pkl' % V
+params_model = {'bsize': 64, 'word_emb_dim': 300, 'enc_lstm_dim': 2048,
+                'pool_type': 'max', 'dpout_model': 0.0, 'version': V}
+infersent = InferSent(params_model)
+infersent.load_state_dict(torch.load(MODEL_PATH))
+W2V_PATH = '/home/malathy/InferSent/dataset/GloVe/glove.840B.300d.txt'
+infersent.set_w2v_path(W2V_PATH)
+index=0
 corr=[]
+count=0
+flag=0
+#inp=input("Enter NL Query \n")
+
+for i in range(len(df['command'])):
+	sentences=["Transfer file1.doc to fold1/file2.doc and overwrite if file2.doc exists."]
+	sentences=[inp]
+	
+	if(re.search('^[mv*]',df['command'][i] )):
+	#if("mv" in df['command'][i]):
+	#if(re.findall(r"^mv$",df['command'][i])):
+		flag=1
+		
+		sentences.append(df['Description'][i])
+		#print(sentences)
+		
+		infersent.build_vocab(sentences, tokenize=True)
+		embeddings = infersent.encode(sentences, tokenize=True)
+		#corr.append(np.inner(embeddings[0],embeddings[1]))
+		corr.append(pearsonr(embeddings[0],embeddings[1])[0])
+		
+	else:
+		if(flag==0):
+			count=count+1
+		else:
+			break
+
+
+
+maxx=corr[0]
+for j in range(1,len(corr)):
+	if(corr[j]>maxx):
+		maxx=corr[j]
+		index=j
+
+
+print(df['command'][count+index])
+
+
+
+
+
+
+#google
+
+'''corr=[]
 index=0
 for i in range(len(df['command'])):
     if("ifconfig" in df['command'][i]):
@@ -41,4 +100,4 @@ for i in range(len(df['command'])):
             if(corr[j]>max):
                 max=corr[j]
                 index=j
-        print(df['command'][i+index])
+        print(df['command'][i+index])'''
