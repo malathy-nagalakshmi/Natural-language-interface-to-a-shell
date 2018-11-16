@@ -21,11 +21,11 @@ from models import InferSent
 import torch
 from scipy.stats.stats import pearsonr   
 import numpy as np
-#df = pd.read_csv('base_class_flag1.csv',error_bad_lines=False)
-df = pd.read_csv('sampledata.csv',error_bad_lines=False)
+df = pd.read_csv('base_class_flag1.csv',error_bad_lines=False)
+#df = pd.read_csv('sampledata.csv',error_bad_lines=False)
 #module_url = "https://tfhub.dev/google/universal-sentence-encoder/2" #@param ["https://tfhub.dev/google/universal-sentence-encoder/2", "https://tfhub.dev/google/universal-sentence-encoder-large/3"]
 #embed = hub.Module(module_url)
-#INfersent
+#InferSent
 V = 1
 MODEL_PATH = 'infersent%s.pkl' % V
 params_model = {'bsize': 64, 'word_emb_dim': 300, 'enc_lstm_dim': 2048,
@@ -46,7 +46,7 @@ for i in range(len(df['command'])):
 	
 	if(re.search('^[mv*]',df['command'][i] )):
 	#if("mv" in df['command'][i]):
-	#if(re.findall(r"^mv$",df['command'][i])):
+	
 		flag=1
 		
 		sentences.append(df['Description'][i])
@@ -79,7 +79,7 @@ print(df['command'][count+index])
 
 
 
-#google
+#google's sentence encoder
 
 '''corr=[]
 index=0
